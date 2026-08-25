@@ -1,4 +1,4 @@
-# i3-display-tools
+# tool_i3_display
 
 Standalone extraction from `workspace_archlinux_i3wm`.
 
