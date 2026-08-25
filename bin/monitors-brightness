@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -u
+
+# Simple brightness helper for 3 monitors using ddcutil.
+# Usage:
+#   ./monitor-brightness.sh          # show current brightness for displays 1,2,3
+#   ./monitor-brightness.sh 75       # set all displays to 75, then show values
+#
+# You can override display numbers, for example:
+#   MONITORS="1 2 3 4" ./monitor-brightness.sh 60
+
+MONITORS=${MONITORS:-"1 2 3"}
+VCP_CODE=10
+
+get_brightness() {
+  local display=$1
+  local output current max
+
+  if ! output=$(ddcutil --display "$display" getvcp "$VCP_CODE" 2>&1); then
+    echo "Display $display: error: $output"
+    return 1
+  fi
+
+  current=$(printf '%s\n' "$output" | sed -n 's/.*current value = *\([0-9]\+\).*/\1/p')
+  max=$(printf '%s\n' "$output" | sed -n 's/.*max value = *\([0-9]\+\).*/\1/p')
+
+  if [ -n "$current" ]; then
+    if [ -n "$max" ]; then
+      echo "Display $display: $current/$max"
+    else
+      echo "Display $display: $current"
+    fi
+  else
+    echo "Display $display: could not parse brightness: $output"
+    return 1
+  fi
+}
+
+show_all() {
+  for display in $MONITORS; do
+    get_brightness "$display" || true
+  done
+}
+
+if [ $# -eq 0 ]; then
+  show_all
+  exit 0
+fi
+
+if [ $# -ne 1 ] || ! [[ $1 =~ ^[0-9]+$ ]] || [ "$1" -lt 0 ] || [ "$1" -gt 100 ]; then
+  echo "Usage: $0 [brightness 0-100]"
+  exit 1
+fi
+
+level=$1
+
+for display in $MONITORS; do
+  echo "Setting display $display to $level..."
+  if ! ddcutil --display "$display" setvcp "$VCP_CODE" "$level"; then
+    echo "Display $display: failed to set brightness" >&2
+  fi
+done
+
+echo
+show_all
