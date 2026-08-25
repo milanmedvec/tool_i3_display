@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+need() {
+    command -v "$1" >/dev/null 2>&1 || {
+        printf '%s: missing required command: %s\n' "${0##*/}" "$1" >&2
+        exit 127
+    }
+}
+
+need xrandr
+need i3-msg
+
+
 xrandr \
     --output HDMI-2 --mode 1920x1080 --pos 0x0 \
     --output HDMI-1 --primary --mode 1920x1080 --pos 1920x0 \
