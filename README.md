@@ -13,12 +13,27 @@ Brightness and monitor layout helpers for an i3/X11 desktop.
 
 ## Dependencies
 
-- bash
-- brightnessctl
-- xrandr
-- i3-msg
-- ddcutil
-- i3status (optional)
+Required commands:
+- `bash`
+- `brightnessctl`
+- `xrandr`
+- `i3-msg`
+- `ddcutil`
+
+Optional commands:
+- `i3status` - refreshed when available/configured
+
+Check required commands in your shell:
+
+```bash
+need() {
+    command -v "$1" >/dev/null || echo "missing: $1"
+}
+
+for cmd in bash brightnessctl xrandr i3-msg ddcutil; do
+    need "$cmd"
+done
+```
 
 ## Install
 
